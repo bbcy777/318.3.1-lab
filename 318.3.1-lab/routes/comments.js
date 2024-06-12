@@ -6,14 +6,37 @@ const fs = require(`fs`);
 const error = require(`../utilities/error`);
 const commentsFilePath = path.join(__dirname, `../data/comments.js`);
 
+//function from chatGPT to read comments from file
+function readComments(callback){
+  fs.readFile(commentsFilePath, (err, data) => {
+    if(err){
+      //if file doesn't exist or error reading file, callback with empty array
+      if (err.code === `ENOENT`) {
+        callback(null, []);
+      } else {
+        callback(err);
+      }
+    } else {
+      if (data.length === 0) {
+        callback(null, [])
+      } else {
+        //Parse JSON data and callback with comments array
+        const comments = JSON.parse(data);
+        callback(null, comments);
+      }
+    }
+  });
+}
+
 router
   .route("/")
-  .get((req, res) => {
-    fs.readFile(commentsFilePath, (err, data) => {
+  .get((req, res, next) => {
+    //read comments from file
+    readComments((err, comments) => {
         if(err){
-            return next(error(500, 'No initial data yet'));
+            return next(error(500, 'internal server error'));
         }
-        const comments = JSON.parse(data);
+        
         const links = [
             {
               href: "comments/:id",
@@ -27,11 +50,11 @@ router
   })
   .post((req, res, next) => {
     if (req.body.userId && req.body.postId && req.body.body) {
-        fs.readFile(commentsFilePath, (err, data) => {
+        readComments((err, comments) => {
             if (err) {
-                return next(error(500, `internal server error`));
+                return next(error(500, `Internal server error`));
             }
-            const comments = JSON.parse(data);
+     
             let count = 1;
             if (comments.length > 0) {
                 count = comments[comments.length - 1].id + 1
@@ -45,7 +68,7 @@ router
     
             comments.push(comment);
         // Write updated comments back to the JSON file
-            fs.writeFile(commentsFilePath, `module.exports = ${JSON.stringify(comments, null, 2)};`, err => {
+            fs.writeFile(commentsFilePath, JSON.stringify(comments, null, 2), err => {
                 if (err) {
                 return next(error(500, "Internal Server Error"));
                 }
@@ -101,4 +124,4 @@ router
 //     else next();
 //   });
 
-  module.exports = router;
+module.exports = router;
