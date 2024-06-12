@@ -4,7 +4,7 @@ const path = require(`path`);
 const fs = require(`fs`);
 
 const error = require(`../utilities/error`);
-const commentsFilePath = path.join(__dirname, `../data/comments.js`);
+const comments = require(`../data/comments`);
 
 //function from chatGPT to read comments from file
 function readComments(callback){
@@ -30,51 +30,29 @@ function readComments(callback){
 
 router
   .route("/")
-  .get((req, res, next) => {
-    //read comments from file
-    readComments((err, comments) => {
-        if(err){
-            return next(error(500, 'internal server error'));
-        }
-        
+  .get((req, res) => {
         const links = [
-            {
-              href: "comments/:id",
-              rel: ":id",
-              type: "GET",
-            },
-          ];
-      
-          res.json({ comments, links });
-    });
-  })
+        {
+            href: "comments/:id",
+            rel: ":id",
+            type: "GET",
+        },
+        ];
+    
+        res.json({ comments, links });
+})
   .post((req, res, next) => {
     if (req.body.userId && req.body.postId && req.body.body) {
-        readComments((err, comments) => {
-            if (err) {
-                return next(error(500, `Internal server error`));
-            }
-     
-            let count = 1;
-            if (comments.length > 0) {
-                count = comments[comments.length - 1].id + 1
-            }
-            const comment = {
-                id: count,
-                userId: req.body.userId,
-                postId: req.body.postId,
-                body: req.body.body,
-            };
-    
-            comments.push(comment);
-        // Write updated comments back to the JSON file
-            fs.writeFile(commentsFilePath, JSON.stringify(comments, null, 2), err => {
-                if (err) {
-                return next(error(500, "Internal Server Error"));
-                }
-                res.json(comment);
-            });
-        });
+
+        const comment = {
+            id: comments[comments.length - 1].id + 1,
+            userId: req.body.userId,
+            postId: req.body.postId,
+            body: req.body.body,
+        };
+
+        comments.push(comment);
+        res.json(comment);
      } else next(error(400, "Insufficient Data"));
   });
 
