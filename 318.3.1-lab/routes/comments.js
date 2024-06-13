@@ -40,29 +40,39 @@ router
             type: "GET",
         },
         ];
-        userId = req.query.userId;
-        postId = req.query.postId;
-        if(!userId &&!postId) {
-            res.json({ comments, links });
+
+        let data = comments;
+
+        if (req.query.userId && req.query.postId) {
+          data = comments.filter((comment) => { comment.userId == req.query.userId && comment.postId == req.query.postId});
+        } else if (req.query.userId && !req.query.postId) {
+          data = comments.filter(comment => comment.userId == req.query.userId);
         } else {
-            if(userId) {
-                console.log(userId);
-                const userComment = comments.filter(c => c.userId == userId);
-                if (!userComment) {
-                    next(error(400, "No comments from this user"));
-                } else {
-                    res.json({userComment, links})
-                }
-            } else {
-                console.log(postId);
-                const postComment = comments.filter(c => c.postId == postId );
-                if (!postComment) {
-                    next(error(400, `No comments for this post`));
-                } else {
-                    res.json({postComment, links});
-                }
-            }
+          data = comments.filter(comment => comment.postId == req.query.postId);
         }
+        // userId = req.query.userId;
+        // postId = req.query.postId;
+        // if(!userId &&!postId) {
+        //     res.json({ comments, links });
+        // } else {
+        //     if(userId) {
+        //         console.log(userId);
+        //         const userComment = comments.filter(c => c.userId == userId);
+        //         if (!userComment) {
+        //             next(error(400, "No comments from this user"));
+        //         } else {
+        //             res.json({userComment, links})
+        //         }
+        //     } else {
+        //         console.log(postId);
+        //         const postComment = comments.filter(c => c.postId == postId );
+        //         if (!postComment) {
+        //             next(error(400, `No comments for this post`));
+        //         } else {
+        //             res.json({postComment, links});
+        //         }
+        //     }
+        // }
     })
   .post((req, res, next) => {
     if (req.body.userId && req.body.postId && req.body.body) {

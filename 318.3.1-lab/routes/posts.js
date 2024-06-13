@@ -50,6 +50,33 @@ router
   });
 
 router
+  .route(`/:id/comments`)
+  .get((req, res, next) => {
+    // const links = [
+    //   {
+    //     href: `/`,
+    //     rel: "",
+    //     type: "GET",
+    //   },
+    //   {
+    //     href: `/${req.params.id}?userId=<value>`,
+    //     rel: "",
+    //     type: "GET",
+    //   },
+    // ]
+
+    const postComment = comments.filter(comment => req.params.id == comment.postId);
+    const userId = req.query.userId;
+
+    if (userId && postComment) {
+      const postCommentUser = postComment.filter(comment => comment.userId == userId);
+      if (postCommentUser) res.json({ postCommentUser, links});
+    } else if (postComment) {
+      res.json(postComment);
+    } else next(error(400, `No matching comment`));
+});
+
+router
   .route("/:id")
   .get((req, res, next) => {
     const post = posts.find((p) => p.id == req.params.id);
@@ -95,31 +122,6 @@ router
     else next();
   });
 
-router
-  .route(`/:id/comments`)
-  .get((req, res, next) => {
-    const links = [
-      {
-        href: `/`,
-        rel: "",
-        type: "GET",
-      },
-      {
-        href: `/${req.params.id}?userId=<value>`,
-        rel: "",
-        type: "GET",
-      },
-    ]
-    const post = posts.find((p) => p.id == req.params.id);
-    const postComment = comments.filter(comment => post.id == comment.postId);
-    const userId = req.query.userId;
 
-    if (userId && postComment) {
-      const postCommentUser = postComment.filter(comment => comment.userId == userId);
-      if (postCommentUser) res.json({ postCommentUser, links});
-    } else if (postComment) {
-      res.json( {postComment, links});
-    } else next();
-  })
 
 module.exports = router;
