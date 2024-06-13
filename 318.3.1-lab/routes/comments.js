@@ -47,7 +47,7 @@ router
         } else {
             if(userId) {
                 console.log(userId);
-                const userComment = comments.filter((c) => { c.userId == usersId});
+                const userComment = comments.filter(c => c.userId == userId);
                 if (!userComment) {
                     next(error(400, "No comments from this user"));
                 } else {
@@ -55,7 +55,7 @@ router
                 }
             } else {
                 console.log(postId);
-                const postComment = comments.filter((c) => { c.postId == postsId });
+                const postComment = comments.filter(c => c.postId == postId );
                 if (!postComment) {
                     next(error(400, `No comments for this post`));
                 } else {
