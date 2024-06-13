@@ -4,6 +4,7 @@ const router = express.Router();
 const users = require("../data/users");
 const posts = require(`../data/posts`)
 const error = require("../utilities/error");
+const comments = require("../data/comments");
 
 router
   .route("/")
@@ -91,20 +92,50 @@ router
     // console.log(userPosts);
     const links = [
       {
-        href: `/${req.params.id}`,
+        href: `/`,
         rel: "",
-        type: "PATCH",
+        type: "GET",
       },
       {
         href: `/${req.params.id}`,
         rel: "",
-        type: "DELETE",
+        type: "GET",
       },
     ];
 
     if (userPosts) res.json({ userPosts, links });
     else next();
-  })
+  });
 
+router.route(`/:id/comments`).get((req, res, next) =>{
+  const links = [
+    {
+      href: `/`,
+      rel: "",
+      type: "GET",
+    },
+    {
+      href: `/${req.params.id}`,
+      rel: "",
+      type: "GET",
+    },
+    {
+      href: `/${req.params.id}/posts`,
+      rel: "",
+      type: "GET",
+    },
+  ]
 
+  const user = users.find(u => u.id == req.params.id)
+  const  postId= req.query.postId;
+  const userComments = comments.filter(comment => comment.userId == user.id);
+
+  if (postId && userComments) {
+    const userCommentsPost = userComments.filter(comments => comments.postId == postId);
+    if (userCommentsPost) res.json( {userCommentsPost, links});
+    else next();
+  } else if (userComments) {
+    res.json({ userComments, links});
+  } else next();
+})
 module.exports = router;

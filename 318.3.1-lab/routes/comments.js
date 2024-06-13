@@ -5,8 +5,8 @@ const fs = require(`fs`);
 
 const error = require(`../utilities/error`);
 const comments = require(`../data/comments`);
-const users = require(`../data/users`);
-const posts = require(`../data/posts`);
+// const users = require(`../data/users`);
+// const posts = require(`../data/posts`);
 
 // //function from chatGPT to read comments from file
 // function readComments(callback){

@@ -3,6 +3,7 @@ const router = express.Router();
 
 const posts = require("../data/posts");
 const error = require("../utilities/error");
+const comments = require("../data/comments");
 
 // const users = require(`../data/users`);
 
@@ -12,6 +13,16 @@ router
     const links = [
       {
         href: "posts/:id",
+        rel: ":id",
+        type: "GET",
+      },
+      {
+        href: "posts/:id/comments",
+        rel: ":id",
+        type: "GET",
+      },
+      {
+        href: "posts/:id/comments/userId",
         rel: ":id",
         type: "GET",
       },
@@ -42,7 +53,7 @@ router
   .route("/:id")
   .get((req, res, next) => {
     const post = posts.find((p) => p.id == req.params.id);
-
+    
     const links = [
       {
         href: `/${req.params.id}`,
@@ -84,5 +95,31 @@ router
     else next();
   });
 
+router
+  .route(`/:id/comments`)
+  .get((req, res, next) => {
+    const links = [
+      {
+        href: `/`,
+        rel: "",
+        type: "GET",
+      },
+      {
+        href: `/${req.params.id}?userId=<value>`,
+        rel: "",
+        type: "GET",
+      },
+    ]
+    const post = posts.find((p) => p.id == req.params.id);
+    const postComment = comments.filter(comment => post.id == comment.postId);
+    const userId = req.query.userId;
+
+    if (userId && postComment) {
+      const postCommentUser = postComment.filter(comment => comment.userId == userId);
+      if (postCommentUser) res.json({ postCommentUser, links});
+    } else if (postComment) {
+      res.json( {postComment, links});
+    } else next();
+  })
 
 module.exports = router;
